@@ -9,19 +9,6 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createMistral } from "@ai-sdk/mistral";
 import { createCohere } from "@ai-sdk/cohere";
 
-const ENCRYPTION_KEY =
-  process.env.ENCRYPTION_KEY || "your-32-character-secret-key-here";
-const ALGORITHM = "aes-256-gcm";
-
-function encrypt(text: string): string {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipher(ALGORITHM, ENCRYPTION_KEY);
-  let encrypted = cipher.update(text, "utf8", "hex");
-  encrypted += cipher.final("hex");
-  const tag = cipher.getAuthTag();
-  return `${iv.toString("hex")}:${tag.toString("hex")}:${encrypted}`;
-}
-
 async function validateApiKey(
   provider: string,
   apiKey: string
@@ -29,8 +16,8 @@ async function validateApiKey(
   try {
     switch (provider) {
       case "openai": {
-        const provider = createOpenAI({ apiKey });
-        const model = provider("gpt-3.5-turbo");
+        const openai = createOpenAI({ apiKey });
+        const model = openai("gpt-3.5-turbo");
         await generateText({
           model,
           prompt: "test",
@@ -40,8 +27,8 @@ async function validateApiKey(
       }
 
       case "anthropic": {
-        const provider = createAnthropic({ apiKey });
-        const model = provider("claude-3-haiku-20240307");
+        const anthropic = createAnthropic({ apiKey });
+        const model = anthropic("claude-3-haiku-20240307");
         await generateText({
           model,
           prompt: "test",
@@ -51,8 +38,8 @@ async function validateApiKey(
       }
 
       case "google": {
-        const provider = createGoogleGenerativeAI({ apiKey });
-        const model = provider("gemini-pro");
+        const google = createGoogleGenerativeAI({ apiKey });
+        const model = google("gemini-1.5-flash");
         await generateText({
           model,
           prompt: "test",
@@ -62,8 +49,8 @@ async function validateApiKey(
       }
 
       case "mistral": {
-        const provider = createMistral({ apiKey });
-        const model = provider("mistral-small-latest");
+        const mistral = createMistral({ apiKey });
+        const model = mistral("mistral-small-latest");
         await generateText({
           model,
           prompt: "test",
@@ -73,8 +60,8 @@ async function validateApiKey(
       }
 
       case "cohere": {
-        const provider = createCohere({ apiKey });
-        const model = provider("command");
+        const cohere = createCohere({ apiKey });
+        const model = cohere("command");
         await generateText({
           model,
           prompt: "test",
@@ -84,11 +71,11 @@ async function validateApiKey(
       }
 
       case "openrouter": {
-        const provider = createOpenAI({
+        const openrouter = createOpenAI({
           apiKey,
           baseURL: "https://openrouter.ai/api/v1",
         });
-        const model = provider("gpt-3.5-turbo");
+        const model = openrouter("gpt-3.5-turbo");
         await generateText({
           model,
           prompt: "test",
@@ -127,7 +114,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const encryptedApiKey = encrypt(apiKey);
     const sessionId = crypto.randomUUID();
 
     const cookieStore = await cookies();
@@ -145,7 +131,7 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7,
     });
 
-    cookieStore.set("api-key", encryptedApiKey, {
+    cookieStore.set("api-key", apiKey, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
