@@ -1,6 +1,6 @@
 import { useDexie } from "~/providers/dexie-provider";
 import { useToast } from "./use-toast";
-import type { MessageRole, MessageStatus } from "~/db/dexie";
+import type { MessageRole, MessageStatus } from "~/db/dexie/schema";
 
 export function useChat() {
   const dexie = useDexie();
