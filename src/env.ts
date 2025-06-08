@@ -7,9 +7,7 @@ export const env = createEnv({
     CLOUDFLARE_DATABASE_ID: z.string().min(1),
     CLOUDFLARE_ACCOUNT_ID: z.string().min(1),
     CLOUDFLARE_API_TOKEN: z.string().min(1),
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     GOOGLE_CLIENT_ID: z.string().min(1),

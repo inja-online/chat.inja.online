@@ -82,8 +82,7 @@ const db = new Dexie("ChatInjaDB") as Dexie & {
 
 db.version(1).stores({
   projects: "++id, name, status, createdAt, updatedAt",
-  threads:
-    "++id, projectId, title, status, createdAt, updatedAt, lastMessageAt",
+  threads: "++id, projectId, title, status, createdAt, updatedAt, lastMessageAt",
   messages: "++id, threadId, projectId, role, status, createdAt, model",
   searchTokens: "++id, type, referenceId, createdAt",
   syncQueue: "++id, operation, table, timestamp, synced",
@@ -91,10 +90,8 @@ db.version(1).stores({
 
 db.version(2).stores({
   projects: "++id, name, status, createdAt, updatedAt",
-  threads:
-    "++id, projectId, title, status, createdAt, updatedAt, lastMessageAt",
-  messages:
-    "++id, threadId, projectId, role, status, createdAt, model, tokensUsed, cost",
+  threads: "++id, projectId, title, status, createdAt, updatedAt, lastMessageAt",
+  messages: "++id, threadId, projectId, role, status, createdAt, model, tokensUsed, cost",
   searchTokens: "++id, type, referenceId, createdAt, *tokens",
   syncQueue: "++id, operation, table, timestamp, synced",
 });
@@ -105,8 +102,7 @@ db.version(3).stores({
     "++id, projectId, title, status, createdAt, updatedAt, lastMessageAt, [projectId+status], [projectId+lastMessageAt]",
   messages:
     "++id, threadId, projectId, role, status, createdAt, model, tokensUsed, cost, [threadId+createdAt], [projectId+createdAt]",
-  searchTokens:
-    "++id, type, referenceId, createdAt, *tokens, [type+referenceId]",
+  searchTokens: "++id, type, referenceId, createdAt, *tokens, [type+referenceId]",
   syncQueue: "++id, operation, table, timestamp, synced, [synced+timestamp]",
 });
 

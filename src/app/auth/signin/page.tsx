@@ -1,17 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Chrome, Eye, EyeOff, Github, Key } from "lucide-react";
 import { signIn } from "next-auth/react";
-import { Github, Chrome, Key, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
@@ -21,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export default function SignInPage() {
   const [apiKey, setApiKey] = useState("");
@@ -57,10 +51,8 @@ export default function SignInPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>
-            Sign in to your account to continue chatting
-          </CardDescription>
+          <CardTitle className="font-bold text-2xl">Welcome Back</CardTitle>
+          <CardDescription>Sign in to your account to continue chatting</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="oauth" className="w-full">
@@ -69,7 +61,7 @@ export default function SignInPage() {
               <TabsTrigger value="apikey">API Key</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="oauth" className="space-y-4 mt-4">
+            <TabsContent value="oauth" className="mt-4 space-y-4">
               <Button
                 onClick={() => signIn("github", { callbackUrl: "/" })}
                 className="w-full"
@@ -88,7 +80,7 @@ export default function SignInPage() {
               </Button>
             </TabsContent>
 
-            <TabsContent value="apikey" className="space-y-4 mt-4">
+            <TabsContent value="apikey" className="mt-4 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="provider">AI Provider</Label>
                 <Select value={provider} onValueChange={setProvider}>
@@ -121,14 +113,10 @@ export default function SignInPage() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowApiKey(!showApiKey)}
                   >
-                    {showApiKey ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
@@ -142,9 +130,9 @@ export default function SignInPage() {
                 {isLoading ? "Authenticating..." : "Continue with API Key"}
               </Button>
 
-              <p className="text-xs text-muted-foreground text-center">
-                Your API key is encrypted and stored securely. We never access
-                your provider account directly.
+              <p className="text-center text-muted-foreground text-xs">
+                Your API key is encrypted and stored securely. We never access your provider account
+                directly.
               </p>
             </TabsContent>
           </Tabs>

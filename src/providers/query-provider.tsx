@@ -1,7 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { useState } from "react";
 
 interface QueryProviderProps {
@@ -30,11 +30,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
           },
           mutations: {
             retry: (failureCount, error: ApiError) => {
-              if (
-                error?.status === 400 ||
-                error?.status === 401 ||
-                error?.status === 404
-              ) {
+              if (error?.status === 400 || error?.status === 401 || error?.status === 404) {
                 return false;
               }
               return failureCount < 2;
@@ -44,7 +40,5 @@ export function QueryProvider({ children }: QueryProviderProps) {
       })
   );
 
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

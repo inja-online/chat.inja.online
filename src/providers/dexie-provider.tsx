@@ -1,17 +1,11 @@
 "use client";
 
 import { useLiveQuery } from "dexie-react-hooks";
-import { createContext, useContext, type ReactNode } from "react";
-import {
-  db,
-  type Project,
-  type Thread,
-  type Message,
-  type SearchToken,
-} from "../db/dexie/schema";
+import { type ReactNode, createContext, useContext } from "react";
+import * as exportUtils from "../db/dexie/export";
 import * as operations from "../db/dexie/operations";
 import * as queries from "../db/dexie/queries";
-import * as exportUtils from "../db/dexie/export";
+import { type Message, type Project, type SearchToken, type Thread, db } from "../db/dexie/schema";
 
 interface DexieContextValue {
   projects: Project[] | undefined;
@@ -31,15 +25,9 @@ interface DexieProviderProps {
 }
 
 export function DexieProvider({ children }: DexieProviderProps) {
-  const projects = useLiveQuery(() =>
-    db.projects.orderBy("updatedAt").reverse().toArray()
-  );
-  const threads = useLiveQuery(() =>
-    db.threads.orderBy("lastMessageAt").reverse().toArray()
-  );
-  const messages = useLiveQuery(() =>
-    db.messages.orderBy("createdAt").toArray()
-  );
+  const projects = useLiveQuery(() => db.projects.orderBy("updatedAt").reverse().toArray());
+  const threads = useLiveQuery(() => db.threads.orderBy("lastMessageAt").reverse().toArray());
+  const messages = useLiveQuery(() => db.messages.orderBy("createdAt").toArray());
   const searchTokens = useLiveQuery(() => db.searchTokens.toArray());
 
   const value: DexieContextValue = {
@@ -52,9 +40,7 @@ export function DexieProvider({ children }: DexieProviderProps) {
     export: exportUtils,
   };
 
-  return (
-    <DexieContext.Provider value={value}>{children}</DexieContext.Provider>
-  );
+  return <DexieContext.Provider value={value}>{children}</DexieContext.Provider>;
 }
 
 export function useDexie() {

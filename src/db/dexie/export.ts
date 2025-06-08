@@ -56,9 +56,7 @@ export async function exportProject(projectId: number): Promise<ExportData> {
   };
 }
 
-export async function exportProjectsAsJSON(
-  projectIds?: number[]
-): Promise<string> {
+export async function exportProjectsAsJSON(projectIds?: number[]): Promise<string> {
   let data: ExportData;
 
   if (!projectIds || projectIds.length === 0) {
@@ -94,10 +92,7 @@ export function downloadJSON(data: string, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-export async function exportAndDownload(
-  projectIds?: number[],
-  filename?: string
-): Promise<void> {
+export async function exportAndDownload(projectIds?: number[], filename?: string): Promise<void> {
   const jsonData = await exportProjectsAsJSON(projectIds);
   const defaultFilename =
     projectIds?.length === 1
@@ -134,8 +129,7 @@ export async function getExportStats(): Promise<{
     db.searchTokens.count(),
   ]);
 
-  const estimatedSize =
-    projects * 500 + threads * 300 + messages * 1000 + searchTokens * 100;
+  const estimatedSize = projects * 500 + threads * 300 + messages * 1000 + searchTokens * 100;
 
   return {
     totalProjects: projects,

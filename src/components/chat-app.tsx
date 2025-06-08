@@ -1,22 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useChat } from "ai/react";
+import { LogOut, MessageSquare, Plus, Send, Settings, User } from "lucide-react";
 import { signOut } from "next-auth/react";
-import {
-  Send,
-  Plus,
-  LogOut,
-  MessageSquare,
-  Settings,
-  User,
-} from "lucide-react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { Separator } from "~/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { Input } from "~/components/ui/input";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import { Separator } from "~/components/ui/separator";
 
 interface Message {
   id: string;
@@ -69,14 +62,7 @@ export function ChatApp({ user }: ChatAppProps) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<string>("");
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    setMessages,
-  } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages } = useChat({
     api: "/api/chat",
     onError: (error) => {
       console.error("Chat error:", error);
@@ -152,16 +138,11 @@ export function ChatApp({ user }: ChatAppProps) {
 
   return (
     <div className="flex h-screen bg-background">
-      <div className="w-80 border-r border-border flex flex-col">
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-semibold">Chats</h1>
-            <Button
-              onClick={createNewChat}
-              size="sm"
-              className="h-8 w-8"
-              variant="outline"
-            >
+      <div className="flex w-80 flex-col border-border border-r">
+        <div className="border-border border-b p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <h1 className="font-semibold text-xl">Chats</h1>
+            <Button onClick={createNewChat} size="sm" className="h-8 w-8" variant="outline">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -174,10 +155,8 @@ export function ChatApp({ user }: ChatAppProps) {
                   {user.name?.charAt(0) || user.email?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {user.name || user.email}
-                </p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-sm">{user.name || user.email}</p>
               </div>
             </div>
 
@@ -203,7 +182,7 @@ export function ChatApp({ user }: ChatAppProps) {
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-2 space-y-2">
+          <div className="space-y-2 p-2">
             {chats.map((chat) => (
               <Card
                 key={chat.id}
@@ -214,12 +193,10 @@ export function ChatApp({ user }: ChatAppProps) {
               >
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2">
-                    <MessageSquare className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {chat.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
+                    <MessageSquare className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-sm">{chat.title}</p>
+                      <p className="text-muted-foreground text-xs">
                         {chat.updatedAt.toLocaleDateString()}
                       </p>
                     </div>
@@ -231,11 +208,11 @@ export function ChatApp({ user }: ChatAppProps) {
         </ScrollArea>
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-1 flex-col">
         {currentChat ? (
           <>
-            <div className="p-4 border-b border-border">
-              <h2 className="text-lg font-semibold">{currentChat.title}</h2>
+            <div className="border-border border-b p-4">
+              <h2 className="font-semibold text-lg">{currentChat.title}</h2>
             </div>
 
             <ScrollArea className="flex-1 p-4">
@@ -243,9 +220,7 @@ export function ChatApp({ user }: ChatAppProps) {
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex ${
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-[70%] rounded-lg px-4 py-2 ${
@@ -255,10 +230,8 @@ export function ChatApp({ user }: ChatAppProps) {
                       }`}
                     >
                       <p className="text-sm">{msg.content}</p>
-                      <p className="text-xs opacity-70 mt-1">
-                        {new Date(
-                          msg.createdAt || Date.now()
-                        ).toLocaleTimeString()}
+                      <p className="mt-1 text-xs opacity-70">
+                        {new Date(msg.createdAt || Date.now()).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
@@ -266,7 +239,7 @@ export function ChatApp({ user }: ChatAppProps) {
               </div>
             </ScrollArea>
 
-            <div className="p-4 border-t border-border">
+            <div className="border-border border-t p-4">
               <form onSubmit={handleFormSubmit} className="flex gap-2">
                 <Input
                   value={input}
@@ -282,10 +255,10 @@ export function ChatApp({ user }: ChatAppProps) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No chat selected</h3>
+              <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 font-semibold text-lg">No chat selected</h3>
               <p className="text-muted-foreground">
                 Select a chat from the sidebar or create a new one
               </p>

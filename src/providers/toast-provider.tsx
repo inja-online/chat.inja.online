@@ -1,7 +1,7 @@
 "use client";
 
-import { Toaster } from "sonner";
 import type { ReactNode } from "react";
+import { Toaster } from "sonner";
 
 interface ToastProviderProps {
   children: ReactNode;

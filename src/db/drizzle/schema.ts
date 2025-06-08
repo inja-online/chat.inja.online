@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text, blob } from "drizzle-orm/sqlite-core";
+import { blob, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
@@ -12,12 +12,8 @@ export const users = sqliteTable("users", {
 
   emailVerified: integer("email_verified", { mode: "boolean" }).default(false),
 
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
   lastLoginAt: integer("last_login_at", { mode: "timestamp" }),
 });
 
@@ -37,9 +33,7 @@ export const accounts = sqliteTable("accounts", {
   id_token: text("id_token"),
   session_state: text("session_state"),
 
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
 });
 
 export const sessions = sqliteTable("sessions", {
@@ -50,9 +44,7 @@ export const sessions = sqliteTable("sessions", {
     .notNull(),
   expires: integer("expires", { mode: "timestamp" }).notNull(),
 
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
 });
 
 export const userData = sqliteTable("user_data", {
@@ -72,12 +64,8 @@ export const userData = sqliteTable("user_data", {
   encryptedData: blob("encrypted_data"),
 
   lastSyncAt: integer("last_sync_at", { mode: "timestamp" }),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
 });
 
 export const apiKeys = sqliteTable("api_keys", {
@@ -94,12 +82,8 @@ export const apiKeys = sqliteTable("api_keys", {
   lastUsedAt: integer("last_used_at", { mode: "timestamp" }),
   expiresAt: integer("expires_at", { mode: "timestamp" }),
 
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
 });
 
 export const syncLogs = sqliteTable("sync_logs", {
@@ -115,9 +99,7 @@ export const syncLogs = sqliteTable("sync_logs", {
   status: text("status").notNull(),
   errorMessage: text("error_message"),
 
-  syncedAt: integer("synced_at", { mode: "timestamp" })
-    .default(sql`(unixepoch())`)
-    .notNull(),
+  syncedAt: integer("synced_at", { mode: "timestamp" }).default(sql`(unixepoch())`).notNull(),
 });
 
 export type User = typeof users.$inferSelect;

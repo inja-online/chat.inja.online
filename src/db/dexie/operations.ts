@@ -1,10 +1,4 @@
-import {
-  db,
-  type Project,
-  type Thread,
-  type Message,
-  type SearchToken,
-} from "./schema";
+import { type Message, type Project, type SearchToken, type Thread, db } from "./schema";
 
 export async function addProject(
   projectData: Omit<Project, "id" | "createdAt" | "updatedAt">
@@ -64,30 +58,21 @@ export async function addSearchToken(
   });
 }
 
-export async function updateProject(
-  id: number,
-  changes: Partial<Project>
-): Promise<number> {
+export async function updateProject(id: number, changes: Partial<Project>): Promise<number> {
   return await db.projects.update(id, {
     ...changes,
     updatedAt: new Date(),
   });
 }
 
-export async function updateThread(
-  id: number,
-  changes: Partial<Thread>
-): Promise<number> {
+export async function updateThread(id: number, changes: Partial<Thread>): Promise<number> {
   return await db.threads.update(id, {
     ...changes,
     updatedAt: new Date(),
   });
 }
 
-export async function updateMessage(
-  id: number,
-  changes: Partial<Message>
-): Promise<number> {
+export async function updateMessage(id: number, changes: Partial<Message>): Promise<number> {
   const message = await db.messages.get(id);
   if (!message) return 0;
 
@@ -101,56 +86,39 @@ export async function updateMessage(
 }
 
 export async function deleteProject(id: number): Promise<void> {
-  await db.transaction(
-    "rw",
-    [db.projects, db.threads, db.messages, db.searchTokens],
-    async () => {
-      const threads = await db.threads.where("projectId").equals(id).toArray();
-      const threadIds = threads
-        .map((t) => t.id)
-        .filter((id) => id !== undefined) as number[];
+  await db.transaction("rw", [db.projects, db.threads, db.messages, db.searchTokens], async () => {
+    const threads = await db.threads.where("projectId").equals(id).toArray();
+    const threadIds = threads.map((t) => t.id).filter((id) => id !== undefined) as number[];
 
-      const messages = await db.messages
-        .where("projectId")
-        .equals(id)
-        .toArray();
-      const messageIds = messages
-        .map((m) => m.id)
-        .filter((id) => id !== undefined) as number[];
+    const messages = await db.messages.where("projectId").equals(id).toArray();
+    const messageIds = messages.map((m) => m.id).filter((id) => id !== undefined) as number[];
 
-      await Promise.all([
-        db.searchTokens
-          .where("referenceId")
-          .anyOf([...threadIds, ...messageIds, id])
-          .delete(),
-        db.messages.where("projectId").equals(id).delete(),
-        db.threads.where("projectId").equals(id).delete(),
-        db.projects.delete(id),
-      ]);
-    }
-  );
+    await Promise.all([
+      db.searchTokens
+        .where("referenceId")
+        .anyOf([...threadIds, ...messageIds, id])
+        .delete(),
+      db.messages.where("projectId").equals(id).delete(),
+      db.threads.where("projectId").equals(id).delete(),
+      db.projects.delete(id),
+    ]);
+  });
 }
 
 export async function deleteThread(id: number): Promise<void> {
-  await db.transaction(
-    "rw",
-    [db.threads, db.messages, db.searchTokens],
-    async () => {
-      const messages = await db.messages.where("threadId").equals(id).toArray();
-      const messageIds = messages
-        .map((m) => m.id)
-        .filter((id) => id !== undefined) as number[];
+  await db.transaction("rw", [db.threads, db.messages, db.searchTokens], async () => {
+    const messages = await db.messages.where("threadId").equals(id).toArray();
+    const messageIds = messages.map((m) => m.id).filter((id) => id !== undefined) as number[];
 
-      await Promise.all([
-        db.searchTokens
-          .where("referenceId")
-          .anyOf([...messageIds, id])
-          .delete(),
-        db.messages.where("threadId").equals(id).delete(),
-        db.threads.delete(id),
-      ]);
-    }
-  );
+    await Promise.all([
+      db.searchTokens
+        .where("referenceId")
+        .anyOf([...messageIds, id])
+        .delete(),
+      db.messages.where("threadId").equals(id).delete(),
+      db.threads.delete(id),
+    ]);
+  });
 }
 
 export async function deleteMessage(id: number): Promise<void> {
@@ -166,10 +134,7 @@ export async function deleteMessage(id: number): Promise<void> {
   });
 }
 
-async function indexMessageContent(
-  messageId: number,
-  content: string
-): Promise<void> {
+async function indexMessageContent(messageId: number, content: string): Promise<void> {
   const tokens = tokenizeContent(content);
   if (tokens.length > 0) {
     await db.searchTokens.add({
@@ -181,10 +146,7 @@ async function indexMessageContent(
   }
 }
 
-async function reindexMessageContent(
-  messageId: number,
-  content: string
-): Promise<void> {
+async function reindexMessageContent(messageId: number, content: string): Promise<void> {
   await db.searchTokens
     .where("referenceId")
     .equals(messageId)
