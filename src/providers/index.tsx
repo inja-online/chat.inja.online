@@ -7,6 +7,7 @@ import { MotionProvider } from "./motion-provider";
 import { QueryProvider } from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
 import { ToastProvider } from "./toast-provider";
+import { BoundKeysProvider } from "./bind-to-key";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -19,7 +20,9 @@ export function Providers({ children }: ProvidersProps) {
         <AuthProvider>
           <MotionProvider>
             <DexieProvider>
-              <ToastProvider>{children}</ToastProvider>
+              <ToastProvider>
+                <BoundKeysProvider>{children}</BoundKeysProvider>
+              </ToastProvider>
             </DexieProvider>
           </MotionProvider>
         </AuthProvider>

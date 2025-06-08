@@ -125,25 +125,33 @@
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.5s;
+  animation-duration: 0.75s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 ::view-transition-old(root) {
-  animation-name: fade-out;
+  animation-name: none;
+  z-index: -1;
 }
 
 ::view-transition-new(root) {
-  animation-name: fade-in;
+  animation-name: reveal;
 }
 
-@keyframes fade-in {
+.dark::view-transition-old(root) {
+  animation-name: none;
+  z-index: -1;
+}
+
+.dark::view-transition-new(root) {
+  animation-name: reveal;
+}
+
+@keyframes reveal {
   from {
-    opacity: 0;
+    clip-path: circle(0 at var(--x, 50%) var(--y, 50%));
   }
-}
-
-@keyframes fade-out {
   to {
-    opacity: 0;
+    clip-path: circle(var(--r, 100px) at var(--x, 50%) var(--y, 50%));
   }
 }

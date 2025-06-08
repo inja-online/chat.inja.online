@@ -63,6 +63,15 @@ export interface SearchToken {
   createdAt: Date;
 }
 
+export interface SearchHistory {
+  id?: number;
+  query: string;
+  timestamp: Date;
+  threadId?: number;
+  projectId?: number;
+  resultCount?: number;
+}
+
 export interface SyncQueue {
   id?: number;
   operation: "create" | "update" | "delete";
@@ -77,6 +86,7 @@ const db = new Dexie("ChatInjaDB") as Dexie & {
   threads: EntityTable<Thread, "id">;
   messages: EntityTable<Message, "id">;
   searchTokens: EntityTable<SearchToken, "id">;
+  searchHistory: EntityTable<SearchHistory, "id">;
   syncQueue: EntityTable<SyncQueue, "id">;
 };
 
@@ -103,6 +113,17 @@ db.version(3).stores({
   messages:
     "++id, threadId, projectId, role, status, createdAt, model, tokensUsed, cost, [threadId+createdAt], [projectId+createdAt]",
   searchTokens: "++id, type, referenceId, createdAt, *tokens, [type+referenceId]",
+  syncQueue: "++id, operation, table, timestamp, synced, [synced+timestamp]",
+});
+
+db.version(4).stores({
+  projects: "++id, name, status, createdAt, updatedAt, [status+updatedAt]",
+  threads:
+    "++id, projectId, title, status, createdAt, updatedAt, lastMessageAt, [projectId+status], [projectId+lastMessageAt]",
+  messages:
+    "++id, threadId, projectId, role, status, createdAt, model, tokensUsed, cost, [threadId+createdAt], [projectId+createdAt]",
+  searchTokens: "++id, type, referenceId, createdAt, *tokens, [type+referenceId]",
+  searchHistory: "++id, query, timestamp, threadId, projectId, [timestamp], [query+timestamp]",
   syncQueue: "++id, operation, table, timestamp, synced, [synced+timestamp]",
 });
 

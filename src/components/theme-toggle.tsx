@@ -3,11 +3,22 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useBindToKey } from "~/hooks/use-bind-to-key";
 import { cn } from "~/lib/utils";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  useBindToKey(
+    [
+      ["cmd", "t"],
+      ["ctrl", "t"],
+    ],
+    () => {
+      toggleTheme();
+    }
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -25,11 +36,22 @@ export function ThemeToggle() {
 
   const isDark = theme === "dark";
 
-  const toggleTheme = () => {
+  const toggleTheme = (event?: React.MouseEvent<HTMLButtonElement>) => {
     if (!document.startViewTransition) {
       setTheme(isDark ? "light" : "dark");
       return;
     }
+
+    const x = event?.clientX ?? 0;
+    const y = event?.clientY ?? 0;
+    const endRadius = Math.hypot(
+      Math.max(x, innerWidth - x),
+      Math.max(y, innerHeight - y)
+    );
+
+    document.documentElement.style.setProperty("--x", `${x}px`);
+    document.documentElement.style.setProperty("--y", `${y}px`);
+    document.documentElement.style.setProperty("--r", `${endRadius}px`);
 
     document.startViewTransition(() => {
       setTheme(isDark ? "light" : "dark");
@@ -51,7 +73,9 @@ export function ThemeToggle() {
         <div
           className={cn(
             "absolute inset-0 flex items-center justify-center transition-all duration-500 ease-in-out",
-            isDark ? "rotate-0 scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"
+            isDark
+              ? "rotate-0 scale-100 opacity-100"
+              : "rotate-90 scale-0 opacity-0"
           )}
         >
           <Moon className="h-4 w-4" />
@@ -59,7 +83,9 @@ export function ThemeToggle() {
         <div
           className={cn(
             "absolute inset-0 flex items-center justify-center transition-all duration-500 ease-in-out",
-            isDark ? "-rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"
+            isDark
+              ? "-rotate-90 scale-0 opacity-0"
+              : "rotate-0 scale-100 opacity-100"
           )}
         >
           <Sun className="h-4 w-4" />

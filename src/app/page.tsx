@@ -1,13 +1,15 @@
-import { redirect } from "next/navigation";
-import { ChatApp } from "~/components/chat-app";
 import { Navigation } from "~/components/navigation";
-import { getAuth } from "~/lib/auth";
+import { ChatInterface } from "~/components/chat-interface";
 
 export default async function Home() {
   return (
     <>
       <Navigation />
-      <main className="min-h-screen" />
+      <main className="flex min-h-screen flex-col">
+        <div className="flex-1">
+          <ChatInterface />
+        </div>
+      </main>
     </>
   );
 }
