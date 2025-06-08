@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { Github, Chrome } from "lucide-react";
+import { Github, Chrome, Key, Eye, EyeOff } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -10,8 +11,48 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 export default function SignInPage() {
+  const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleApiKeySignIn = async () => {
+    if (!apiKey.trim() || !provider) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/auth/api-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: apiKey.trim(), provider }),
+      });
+
+      if (response.ok) {
+        window.location.href = "/";
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to authenticate with API key");
+      }
+    } catch (error) {
+      console.error("API key authentication error:", error);
+      alert("Authentication failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md">
@@ -21,23 +62,91 @@ export default function SignInPage() {
             Sign in to your account to continue chatting
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={() => signIn("github", { callbackUrl: "/" })}
-            className="w-full"
-            variant="outline"
-          >
-            <Github className="mr-2 h-4 w-4" />
-            Continue with GitHub
-          </Button>
-          <Button
-            onClick={() => signIn("google", { callbackUrl: "/" })}
-            className="w-full"
-            variant="outline"
-          >
-            <Chrome className="mr-2 h-4 w-4" />
-            Continue with Google
-          </Button>
+        <CardContent>
+          <Tabs defaultValue="oauth" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="oauth">OAuth</TabsTrigger>
+              <TabsTrigger value="apikey">API Key</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="oauth" className="space-y-4 mt-4">
+              <Button
+                onClick={() => signIn("github", { callbackUrl: "/" })}
+                className="w-full"
+                variant="outline"
+              >
+                <Github className="mr-2 h-4 w-4" />
+                Continue with GitHub
+              </Button>
+              <Button
+                onClick={() => signIn("google", { callbackUrl: "/" })}
+                className="w-full"
+                variant="outline"
+              >
+                <Chrome className="mr-2 h-4 w-4" />
+                Continue with Google
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="apikey" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="provider">AI Provider</Label>
+                <Select value={provider} onValueChange={setProvider}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your AI provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="openai">OpenAI</SelectItem>
+                    <SelectItem value="anthropic">Anthropic</SelectItem>
+                    <SelectItem value="google">Google AI</SelectItem>
+                    <SelectItem value="cohere">Cohere</SelectItem>
+                    <SelectItem value="mistral">Mistral AI</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="apikey">API Key</Label>
+                <div className="relative">
+                  <Input
+                    id="apikey"
+                    type={showApiKey ? "text" : "password"}
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Enter your API key"
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                  >
+                    {showApiKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleApiKeySignIn}
+                className="w-full"
+                disabled={!apiKey.trim() || !provider || isLoading}
+              >
+                <Key className="mr-2 h-4 w-4" />
+                {isLoading ? "Authenticating..." : "Continue with API Key"}
+              </Button>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Your API key is encrypted and stored securely. We never access
+                your provider account directly.
+              </p>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

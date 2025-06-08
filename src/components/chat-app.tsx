@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useChat } from "ai/react";
 import { signOut } from "next-auth/react";
 import {
   Send,
@@ -50,26 +51,70 @@ interface ChatAppProps {
 }
 
 export function ChatApp({ user }: ChatAppProps) {
-  const [chats, setChats] = useState<Chat[]>([
-    {
-      id: "1",
-      title: "Welcome Chat",
-      messages: [
-        {
-          id: "msg-1",
-          content: "Hello! How can I help you today?",
-          timestamp: new Date(),
-          isUser: false,
-        },
-      ],
-      updatedAt: new Date(),
-    },
-  ]);
+  const handleSignOut = async () => {
+    try {
+      // Try to clear API key session first
+      const response = await fetch("/api/auth/signout", { method: "POST" });
+      if (response.ok) {
+        window.location.href = "/auth/signin";
+        return;
+      }
+    } catch (error) {
+      console.log("No API key session to clear");
+    }
 
-  const [activeChat, setActiveChat] = useState<string>("1");
-  const [message, setMessage] = useState("");
+    // Fall back to OAuth sign out
+    signOut();
+  };
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [activeChat, setActiveChat] = useState<string>("");
+
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    setMessages,
+  } = useChat({
+    api: "/api/chat",
+    onError: (error) => {
+      console.error("Chat error:", error);
+      alert("Failed to send message. Please try again.");
+    },
+    onFinish: (message) => {
+      updateChatWithMessages(messages.concat(message));
+    },
+  });
 
   const currentChat = chats.find((chat) => chat.id === activeChat);
+
+  const updateChatWithMessages = (newMessages: any[]) => {
+    if (!activeChat) return;
+
+    const convertedMessages: Message[] = newMessages.map((msg) => ({
+      id: msg.id || Date.now().toString(),
+      content: msg.content,
+      timestamp: new Date(msg.createdAt || Date.now()),
+      isUser: msg.role === "user",
+    }));
+
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === activeChat
+          ? {
+              ...chat,
+              messages: convertedMessages,
+              title:
+                convertedMessages.length > 0 && chat.title === "New Chat"
+                  ? `${convertedMessages[0].content.slice(0, 30)}...`
+                  : chat.title,
+              updatedAt: new Date(),
+            }
+          : chat
+      )
+    );
+  };
 
   const createNewChat = () => {
     const newChat: Chat = {
@@ -80,49 +125,29 @@ export function ChatApp({ user }: ChatAppProps) {
     };
     setChats((prev) => [newChat, ...prev]);
     setActiveChat(newChat.id);
+    setMessages([]);
   };
 
-  const sendMessage = () => {
-    if (!message.trim() || !currentChat) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: message.trim(),
-      timestamp: new Date(),
-      isUser: true,
-    };
-
-    const aiResponse: Message = {
-      id: (Date.now() + 1).toString(),
-      content: `I'm a demo AI assistant. Your message was: ${message.trim()}`,
-      timestamp: new Date(),
-      isUser: false,
-    };
-
-    setChats((prev) =>
-      prev.map((chat) =>
-        chat.id === activeChat
-          ? {
-              ...chat,
-              messages: [...chat.messages, userMessage, aiResponse],
-              title:
-                chat.messages.length === 0
-                  ? `${message.trim().slice(0, 30)}...`
-                  : chat.title,
-              updatedAt: new Date(),
-            }
-          : chat
-      )
-    );
-
-    setMessage("");
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+  const switchToChat = (chatId: string) => {
+    const chat = chats.find((c) => c.id === chatId);
+    if (chat) {
+      setActiveChat(chatId);
+      const convertedMessages = chat.messages.map((msg) => ({
+        id: msg.id,
+        role: msg.isUser ? "user" : "assistant",
+        content: msg.content,
+        createdAt: msg.timestamp.toISOString(),
+      }));
+      setMessages(convertedMessages);
     }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeChat) {
+      createNewChat();
+    }
+    handleSubmit(e);
   };
 
   return (
@@ -168,7 +193,7 @@ export function ChatApp({ user }: ChatAppProps) {
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>
+                <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
@@ -185,7 +210,7 @@ export function ChatApp({ user }: ChatAppProps) {
                 className={`cursor-pointer transition-colors hover:bg-muted/50 ${
                   activeChat === chat.id ? "bg-muted" : ""
                 }`}
-                onClick={() => setActiveChat(chat.id)}
+                onClick={() => switchToChat(chat.id)}
               >
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2">
@@ -215,23 +240,25 @@ export function ChatApp({ user }: ChatAppProps) {
 
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
-                {currentChat.messages.map((msg) => (
+                {messages.map((msg) => (
                   <div
                     key={msg.id}
                     className={`flex ${
-                      msg.isUser ? "justify-end" : "justify-start"
+                      msg.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
                     <div
                       className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                        msg.isUser
+                        msg.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
                       <p className="text-sm">{msg.content}</p>
                       <p className="text-xs opacity-70 mt-1">
-                        {msg.timestamp.toLocaleTimeString()}
+                        {new Date(
+                          msg.createdAt || Date.now()
+                        ).toLocaleTimeString()}
                       </p>
                     </div>
                   </div>
@@ -240,18 +267,18 @@ export function ChatApp({ user }: ChatAppProps) {
             </ScrollArea>
 
             <div className="p-4 border-t border-border">
-              <div className="flex gap-2">
+              <form onSubmit={handleFormSubmit} className="flex gap-2">
                 <Input
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  value={input}
+                  onChange={handleInputChange}
                   placeholder="Type your message..."
                   className="flex-1"
+                  disabled={isLoading}
                 />
-                <Button onClick={sendMessage} disabled={!message.trim()}>
+                <Button type="submit" disabled={!input.trim() || isLoading}>
                   <Send className="h-4 w-4" />
                 </Button>
-              </div>
+              </form>
             </div>
           </>
         ) : (
