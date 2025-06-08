@@ -101,6 +101,7 @@ export default function SignInPage() {
                     <SelectItem value="google">Google AI</SelectItem>
                     <SelectItem value="cohere">Cohere</SelectItem>
                     <SelectItem value="mistral">Mistral AI</SelectItem>
+                    <SelectItem value="openrouter">OpenRouter</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
