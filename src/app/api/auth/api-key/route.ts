@@ -2,6 +2,12 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "node:crypto";
+import { generateText } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createMistral } from "@ai-sdk/mistral";
+import { createCohere } from "@ai-sdk/cohere";
 
 const ENCRYPTION_KEY =
   process.env.ENCRYPTION_KEY || "your-32-character-secret-key-here";
@@ -22,30 +28,74 @@ async function validateApiKey(
 ): Promise<boolean> {
   try {
     switch (provider) {
-      case "openai":
-        const openaiResponse = await fetch("https://api.openai.com/v1/models", {
-          headers: { Authorization: `Bearer ${apiKey}` },
+      case "openai": {
+        const provider = createOpenAI({ apiKey });
+        const model = provider("gpt-3.5-turbo");
+        await generateText({
+          model,
+          prompt: "test",
+          maxTokens: 1,
         });
-        return openaiResponse.ok;
+        return true;
+      }
 
-      case "anthropic":
-        const anthropicResponse = await fetch(
-          "https://api.anthropic.com/v1/messages",
-          {
-            method: "POST",
-            headers: {
-              "x-api-key": apiKey,
-              "anthropic-version": "2023-06-01",
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "claude-3-haiku-20240307",
-              max_tokens: 1,
-              messages: [{ role: "user", content: "test" }],
-            }),
-          }
-        );
-        return anthropicResponse.status !== 401;
+      case "anthropic": {
+        const provider = createAnthropic({ apiKey });
+        const model = provider("claude-3-haiku-20240307");
+        await generateText({
+          model,
+          prompt: "test",
+          maxTokens: 1,
+        });
+        return true;
+      }
+
+      case "google": {
+        const provider = createGoogleGenerativeAI({ apiKey });
+        const model = provider("gemini-pro");
+        await generateText({
+          model,
+          prompt: "test",
+          maxTokens: 1,
+        });
+        return true;
+      }
+
+      case "mistral": {
+        const provider = createMistral({ apiKey });
+        const model = provider("mistral-small-latest");
+        await generateText({
+          model,
+          prompt: "test",
+          maxTokens: 1,
+        });
+        return true;
+      }
+
+      case "cohere": {
+        const provider = createCohere({ apiKey });
+        const model = provider("command");
+        await generateText({
+          model,
+          prompt: "test",
+          maxTokens: 1,
+        });
+        return true;
+      }
+
+      case "openrouter": {
+        const provider = createOpenAI({
+          apiKey,
+          baseURL: "https://openrouter.ai/api/v1",
+        });
+        const model = provider("gpt-3.5-turbo");
+        await generateText({
+          model,
+          prompt: "test",
+          maxTokens: 1,
+        });
+        return true;
+      }
 
       default:
         return false;
@@ -58,7 +108,8 @@ async function validateApiKey(
 
 export async function POST(request: NextRequest) {
   try {
-    const { apiKey, provider } = await request.json();
+    const body = (await request.json()) as { apiKey: string; provider: string };
+    const { apiKey, provider } = body;
 
     if (!apiKey || !provider) {
       return NextResponse.json(
