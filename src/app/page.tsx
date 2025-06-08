@@ -1,9 +1,13 @@
-import Image from "next/image";
+import { getAuth } from "~/lib/auth";
+import { ChatApp } from "~/components/chat-app";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
-    <div className="flex h-screen w-screen items-center justify-center">
-      Coming soon...
-    </div>
-  );
+export default async function Home() {
+  const session = await getAuth();
+
+  if (!session || !session.user) {
+    redirect("/auth/signin");
+  }
+
+  return <ChatApp user={session.user} />;
 }

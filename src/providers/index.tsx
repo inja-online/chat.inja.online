@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AuthProvider } from "./auth-provider";
 import { DexieProvider } from "./dexie-provider";
 import { MotionProvider } from "./motion-provider";
 import { ThemeProvider } from "./theme-provider";
@@ -13,11 +14,13 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <ThemeProvider>
-      <MotionProvider>
-        <DexieProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </DexieProvider>
-      </MotionProvider>
+      <AuthProvider>
+        <MotionProvider>
+          <DexieProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </DexieProvider>
+        </MotionProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
